@@ -1,9 +1,6 @@
 public class Books {
 }
-//take book
-// return book
-// request book
-//add new book
+
 class TakeBook {
 
 }
@@ -14,5 +11,8 @@ class RequestBook {
 
 }
 class AdddNewBook {
+
+}
+class BookRelation{
 
 }
