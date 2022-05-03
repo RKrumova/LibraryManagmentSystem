@@ -60,5 +60,20 @@ public class LoginFrame extends JFrame {
             signFrame.setVisible(true);
         }
     }
-
+    class StudentForm implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setVisible(false);
+            StudentFrame studentFrame = new StudentFrame();
+            studentFrame.setVisible(true);
+        }
+    }
+    class AdminForm implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setVisible(false);
+            AdministrativeRights adminRight = new AdministrativeRights();
+            adminRight.setVisible(true);
+        }
+    }
 }

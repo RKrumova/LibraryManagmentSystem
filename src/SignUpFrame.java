@@ -4,10 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+
 //signFrame in main
 public class SignUpFrame extends JFrame{
     Connection conn=null;
@@ -48,7 +46,7 @@ public class SignUpFrame extends JFrame{
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.add(panel);
         this.setLayout(new GridLayout(2, 1));
-        upPanel.setLayout(new GridLayout(8, 2));
+        upPanel.setLayout(new GridLayout(8, 1));
         upPanel.add(fnameL);            upPanel.add(fnameT);
         upPanel.add(lnameL);            upPanel.add(lnameT);
         upPanel.add(ageL);              upPanel.add(ageT);
@@ -80,12 +78,19 @@ public class SignUpFrame extends JFrame{
         secretQuestionT.setText("");
         secretAnswerT.setText("");
     }
+    public boolean passwordCheck(){
+        if(password1T.equals(password2T)){
+            return true;
+        } else{
+            //Print that the two passwords dot match
+            return false;
+        }
+    }
     class AddAction implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            conn = DBConnection.getConnection();
-            String sql = "Insert into userdata(fname,lname,age, username,password, question, answer)" + "values(?,?,?,?,?,?,?)";
+            String sql = "Insert into userinformation(fname,lname,sex,age,salary,hotel,room)" + "values(?,?,?,?,?,?,?)";
             try {
                 state=conn.prepareStatement(sql);
                 state.setString(1,fnameT.getText());
