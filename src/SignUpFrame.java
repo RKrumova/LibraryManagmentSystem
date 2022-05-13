@@ -4,14 +4,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.*;
-
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
 //signFrame in main
 public class SignUpFrame extends JFrame{
-    Connection conn=null;
-    PreparedStatement state=null;
-    ResultSet result=null;
-    int id=-1;
+    Connection conn = null;
+    PreparedStatement state = null;
+
+    String errorMessage = "";
     //make panels
     JPanel upPanel = new JPanel();
     JPanel downPanel = new JPanel();
@@ -19,20 +20,17 @@ public class SignUpFrame extends JFrame{
     JLabel fnameL = new JLabel("First name");
     JLabel lnameL=new JLabel("LastName");
     JLabel ageL = new JLabel("Age:");
-    JLabel emailL = new JLabel("Email address:");
+    JLabel usernameL = new JLabel("Enter username");
+    JLabel passwordL=new JLabel("Enter your password: ");
+    JLabel secretQuestionL = new JLabel("Enter secret question:");
+    JLabel secretAnswerL = new JLabel("Answer:");
+    JLabel errorLabel = new JLabel(errorMessage);
     JTextField fnameT=new JTextField();
     JTextField lnameT=new JTextField();
     JTextField ageT=new JTextField();
     JTextField emailT = new JTextField();
-    //login information
-    JLabel usernameL = new JLabel("Enter username");
-    JLabel password1L=new JLabel("Enter your password: ");
-    JLabel password2L=new JLabel("Enter your password again: ");
-    JLabel secretQuestionL = new JLabel("Enter secret question:");
-    JLabel secretAnswerL = new JLabel("Answer:");
     JTextField usernameT=new JTextField();
-    JTextField password1T=new JTextField();
-    JTextField password2T=new JTextField();
+    JTextField passwordT=new JTextField();
     JTextField secretQuestionT = new JTextField();
     JTextField secretAnswerT = new JTextField();
     //buttons
@@ -46,17 +44,17 @@ public class SignUpFrame extends JFrame{
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.add(panel);
         this.setLayout(new GridLayout(2, 1));
-        upPanel.setLayout(new GridLayout(8, 1));
+        upPanel.setLayout(new GridLayout(7, 1));
         upPanel.add(fnameL);            upPanel.add(fnameT);
         upPanel.add(lnameL);            upPanel.add(lnameT);
         upPanel.add(ageL);              upPanel.add(ageT);
         upPanel.add(usernameL);         upPanel.add(usernameT);
-        upPanel.add(password1L);        upPanel.add(password1T);
-        upPanel.add(password2L);        upPanel.add(password2T);
+        upPanel.add(passwordL);        upPanel.add(passwordT);
         upPanel.add(secretQuestionL);   upPanel.add(secretQuestionT);
         upPanel.add(secretAnswerL);     upPanel.add(secretAnswerT);
         this.add(upPanel);
         //downPanel
+        downPanel.add(errorLabel);
         downPanel.add(createButton);
         createButton.addActionListener(new AddAction());
         downPanel.add(loginButton);
@@ -73,48 +71,44 @@ public class SignUpFrame extends JFrame{
         ageT.setText("");
         emailT.setText("");
         usernameT.setText("");
-        password1T.setText("");
-        password2T.setText("");
+        passwordT.setText("");
         secretQuestionT.setText("");
         secretAnswerT.setText("");
+
     }
-    public boolean passwordCheck(){
-        if(password1T.equals(password2T)){
-            return true;
-        } else{
-            //Print that the two passwords dot match
-            return false;
-        }
-    }
+
     class AddAction implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            String sql = "Insert into userinformation(fname,lname,sex,age,salary,hotel,room)" + "values(?,?,?,?,?,?,?)";
+            conn = DBConnection.getConnection();
+            String sql = "Insert into userinformation(fname,lname, age, username, password, question, answer) values(?,?,?,?,?,?,?)";
             try {
                 state=conn.prepareStatement(sql);
                 state.setString(1,fnameT.getText());
                 state.setString(2,lnameT.getText());
                 state.setInt(3,Integer.parseInt(ageT.getText()));
                 state.setString(4, usernameT.getText());
-                state.setString(5, password1T.getText());
+                state.setString(5, passwordT.getText());
                 state.setString(6, secretQuestionT.getText());
                 state.setString(7, secretAnswerT.getText());
                 state.execute();
+                errorMessage = "Account has been created";
+                clearForm();
+
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
         }
     }
     class ClearAction implements ActionListener{
-
         @Override
         public void actionPerformed(ActionEvent e) {
             clearForm();
         }
     }
     class GoToLogin implements ActionListener{
-
+//
         @Override
         public void actionPerformed(ActionEvent e) {
             setVisible(false);
@@ -122,28 +116,54 @@ public class SignUpFrame extends JFrame{
             loginFrame.setVisible(true);
         }
     }
-    class MouseAction implements MouseListener{
+    class MouseAction implements MouseListener {
 
+        /**
+         * Invoked when the mouse button has been clicked (pressed
+         * and released) on a component.
+         *
+         * @param e the event to be processed
+         */
         @Override
         public void mouseClicked(MouseEvent e) {
-            //int
+
         }
 
+        /**
+         * Invoked when a mouse button has been pressed on a component.
+         *
+         * @param e the event to be processed
+         */
         @Override
         public void mousePressed(MouseEvent e) {
 
         }
 
+        /**
+         * Invoked when a mouse button has been released on a component.
+         *
+         * @param e the event to be processed
+         */
         @Override
         public void mouseReleased(MouseEvent e) {
 
         }
 
+        /**
+         * Invoked when the mouse enters a component.
+         *
+         * @param e the event to be processed
+         */
         @Override
         public void mouseEntered(MouseEvent e) {
 
         }
 
+        /**
+         * Invoked when the mouse exits a component.
+         *
+         * @param e the event to be processed
+         */
         @Override
         public void mouseExited(MouseEvent e) {
 

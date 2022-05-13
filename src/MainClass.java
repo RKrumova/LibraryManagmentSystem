@@ -1,13 +1,17 @@
 import javax.swing.*;
 public class MainClass extends JFrame{
     public static void main(String[] args){
-        //sign up
-        SignUpFrame signFrame = new SignUpFrame();
-        LoginFrame loginFrame = new LoginFrame();
-        //dont forget ever
-        signFrame.setVisible(true);
-        loginFrame.setVisible(false);
-        //if admin and user correct or created the close signFrame and open Student or admin
+//        SignUpFrame signFrame = new SignUpFrame();
+//        signFrame.setVisible(true);
+/*
 
+        LoginFrame loginFrame = new LoginFrame();
+        loginFrame.setVisible(true);
+        System.out.println("adminparker + passwords");
+        System.out.println("emilyolsan + emilyolsan");
+        System.out.println("naydenov + naydenovPass");
+*/
+        AdminFrame adminFrame = new AdminFrame();
+        adminFrame.setVisible(true);
     }
 }
