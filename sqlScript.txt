@@ -7,7 +7,6 @@ PASSWORD NVARCHAR(20) NOT NULL,
 QUESTION VARCHAR(50) NOT NULL,
 ANSWER VARCHAR(50) NOT NULL
 );
-//
 CREATE TABLE workers (
 FNAME NVARCHAR(20) NOT NULL,
 LNAME NVARCHAR(20) NOT NULL,
@@ -21,25 +20,38 @@ ADDRESS NVARCHAR(40) NOT NULL,
 NUMBER NVARCHAR(10) NOT NULL,
 POSITION NVARCHAR(20) NOT NULL
 );
-
 CREATE TABLE books (
 ISBN NVARCHAR(14) PRIMARY KEY,
 TITLE NVARCHAR(30) NOT NULL,
 AUTHOR NVARCHAR(40) NOT NULL,
 QUANTITY int NOT NULL
 );
-SELECT * FROM books;
-Insert into books (isbn, title, author, QUANTITY)
-values ('1234567890123', 'Some title', 'A real person', 2);
+create table takenBooks(
+    ID identity primary key,
+    username VARCHAR(50),
+    bookName nvarchar(50),
+    author nvarchar(50),
+    bookISBN nvarchar(14),
+    dataTaken date,
+    dataReturn date
+);
 
 SELECT  * FROM userinformation;
 Insert into userinformation (fname,lname, age, username, password, question, answer)
 values ('Penny' ,'Parker',12,'parker2','passwords','questions','answers');
-
 SELECT * FROM workers;
 Insert into workers(fname, lname,egn, age, username,password, email, city, address,number,position)
 values ('Penny' ,'Parker','1234567890',12,'adminparker','passwords','at@abv.bg','Plovdiv', 'ul. Pobeda', '1234567890', 'Technicians');
-
-
+select * from takenBooks;
+SELECT * FROM books;
+Insert into books (isbn, title, author, QUANTITY)
+values ('1234567890123', 'Some title', 'A real person', 2);
+select fname, lname, age, username, password from userinformation;
+select fname, lname, age, username, password from workers
 
 //  jdbc:h2:C:\Users\bitchin25\Desktop\Library\LibraryDB
+------------------------ВЪПРОСИ-------------------------------------
+
+Как се изпринтват данните от две таблици?
+Как да направя така че да ми се показват бутоните само при натискане на searchButton
+Защо не ми отчита другите if а само първия
