@@ -84,7 +84,6 @@ public class LoginFrame extends JFrame {
                     }
 
                 } else {
-
                     String sql = "select * from userinformation where username='" + username + "' and password  ='" + password +"'";
                     System.out.println(sql);
                     ResultSet resultSet = statement.executeQuery(sql);
@@ -92,6 +91,7 @@ public class LoginFrame extends JFrame {
                     if(resultSet.next()) {
                         System.out.println("Im in else statment");
                         setVisible(false);
+                        StudentFrame.username = username;
                         StudentFrame studentFrame = new StudentFrame();
                         studentFrame.setVisible(true);
                     } else {

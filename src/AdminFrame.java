@@ -21,6 +21,9 @@ public class AdminFrame extends JFrame {
     JPanel upBookPanel = new JPanel();
     JPanel midBookPanel = new JPanel();
     JPanel downBookPanel = new JPanel();
+    JPanel editUpPanel = new JPanel();
+    JPanel editMidPanel = new JPanel();
+    JPanel editDownPanel = new JPanel();
     JTabbedPane tab = new JTabbedPane();
     JLabel titleLabel = new JLabel("Title");
     JLabel authorLabel = new JLabel("Author");
@@ -32,13 +35,12 @@ public class AdminFrame extends JFrame {
     JTextField isbnT = new JTextField();
     JButton addBookButton = new JButton("Add");
     JButton editBookButton = new JButton("Edit");
-    JButton removeBookButton = new JButton("Remove");
+    JButton removeBookButton = new JButton("Delete");
     JButton refreshBookButton = new JButton("Refresh");
     JTable tableBooks=new JTable();
     JScrollPane myBookScroll=new JScrollPane(tableBooks);
-    //JButton searchBookButton = new JButton("Search");
+    JButton searchBookButton = new JButton("Search");
     //---------addNewUserPanel---------
-
     JLabel fnameL = new JLabel("First name");
     JLabel lnameL=new JLabel("LastName");
     JLabel ageL = new JLabel("Age:");
@@ -75,9 +77,26 @@ public class AdminFrame extends JFrame {
     JTextField  cityTC = new JTextField();
     JTextField  addressTC = new JTextField();
     JTextField  numberTC = new JTextField();
-
     String[] item= {"Librarian", "Library Managers", "Library Directors", "Public relations", "Accounting", "Human Resources", "Technicians"};
     JComboBox<String> jobs =new JComboBox<String>(item);
+    //------------------------------------------edit user-----------------------------------------------------------
+    JLabel eusernameL = new JLabel("Enter user");
+    JTextField usernameEditSearchTF = new JTextField();
+    JButton searchUserButton = new JButton("Search");
+    JButton editUserButton = new JButton("Edit user");
+    JTable tableUsers = new JTable();
+    JScrollPane usersScroll = new JScrollPane(tableUsers);
+    //fname=?, lname=?, age=?, username=?, password=?
+    JLabel fnameLE = new JLabel("First name");
+    JLabel lnameLE=new JLabel("LastName");
+    JLabel ageLE = new JLabel("Age:");
+    JLabel usernameLE = new JLabel("Username");
+    JLabel passwordLE =new JLabel("Password: ");
+    JTextField fnameTE=new JTextField();
+    JTextField lnameTE=new JTextField();
+    JTextField ageTE=new JTextField();
+    JTextField usernameE=new JTextField();
+    JTextField passwordTE=new JTextField();
     public AdminFrame(){
         this.setSize(400,600);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -100,8 +119,10 @@ public class AdminFrame extends JFrame {
         midBookPanel.add(editBookButton);
         midBookPanel.add(removeBookButton);
         midBookPanel.add(refreshBookButton);
+        midBookPanel.add(searchBookButton);
         addBookButton.addActionListener(new addBookAction());
         editBookButton.addActionListener(new editBooksAction());
+        searchBookButton.addActionListener(new searchBookAction());
         removeBookButton.addActionListener(new removeBookAction());
         refreshBookButton.addActionListener(new refreshBookAction());
         myBookScroll.setPreferredSize(new Dimension(350, 150));
@@ -152,12 +173,27 @@ public class AdminFrame extends JFrame {
         addColleaguePanel.add(jobs);
         addColleaguePanel.add(creteColleagueButton);
         creteColleagueButton.addActionListener(new AddCollegeAction());
+        //----------------------edit user------------------------------
+        editPanel.setLayout(new GridLayout(3, 1));
+        editUpPanel.setLayout(new GridLayout(1,2));
+        editPanel.add(editUpPanel);
+        editPanel.add(editMidPanel);
+        editPanel.add(editDownPanel);
+        editUpPanel.add(eusernameL);
+        editUpPanel.add( usernameEditSearchTF);
+        editMidPanel.add(searchUserButton);
+        editMidPanel.add(editUserButton);
+        editDownPanel.add(usersScroll);
+        editUserButton.addActionListener(new EditUserAction());
+        searchUserButton.addActionListener(new SearchUserAction());
+        usersScroll.setPreferredSize(new Dimension(400, 450));
+        refreshUsers();
+
         this.add(tab);
         this.setVisible(true);
     }
 
 //    ----------------------------------------------------------------------------------------------
-
     public void messagePopUp(){
         JOptionPane.showMessageDialog(this, "Invalid information");
     }
@@ -173,7 +209,6 @@ public class AdminFrame extends JFrame {
         cityTC.setText("");
         addressTC.setText("");
         numberTC.setText("");
-
     }
     public void clearFormUser(){
         fnameT.setText("");
@@ -204,9 +239,20 @@ public class AdminFrame extends JFrame {
             e.printStackTrace();
         }
     }
-
-//    ----------------------------------------------------------------------------------------------
-
+    public void refreshUsers(){
+        conn = DBConnection.getConnection();
+        try {
+            state = conn.prepareStatement("select fname, lname, age, username, password from userinformation;");
+            state = conn.prepareStatement("select fname, lname, age, username, password from workers");
+            result = state.executeQuery();
+        } catch (SQLException e) {
+            messagePopUp();
+            e.printStackTrace();
+        } catch (Exception e) {
+            messagePopUp();
+            e.printStackTrace();
+        }
+    }
     class addBookAction implements  ActionListener{
         @Override
         public void actionPerformed(ActionEvent e){
@@ -250,13 +296,54 @@ public class AdminFrame extends JFrame {
             }
         }
     }
+    class searchBookAction implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            conn = DBConnection.getConnection();
+            String sql = null;
+            if (titleT.getText() != null){
+                sql = "select * from books where title like '%" + titleT.getText() + "%'";
+            } else if (authorT.getText() != null){
+                sql = "select * from books where author like '%" + authorT.getText() + "%'";
+                System.out.println(sql + "\n\nauthor");
+            } else if (quantityT.getText() != null){
+                sql = "select * from books where quantity like '%" + quantityT.getText() + "%'";
+                System.out.println(sql + "\n\nquantity");
+            }else if (isbnT.getText() != null){
+                sql = "select * from books where isbn like '%" + isbnT.getText() + "%'";
+                System.out.println(sql + "\n\nisbn");
+            } else{
+                messagePopUp();
+            }
+            try{
+                state = conn.prepareStatement(sql);
+                result = state.executeQuery();
+                tableBooks.setModel(new MyModel(result));
+            } catch (SQLException ex) {
+                messagePopUp();
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                messagePopUp();
+                ex.printStackTrace();
+            }
+        }
+    }
     class removeBookAction implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
             conn = DBConnection.getConnection();
-            if(Integer.parseInt(quantityT.getText()) > 1){
-                //String sql = 'Update books set quantity = '
+            String sql = "delete from books where isbn=?";
+            try {
+                state = conn.prepareStatement(sql);
+                state.setString(1, isbnT.getText());
+                state.execute();
+                refreshBooks();
+                clearFormBook();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
             }
+
         }
     }
     class refreshBookAction implements ActionListener{
@@ -265,7 +352,6 @@ public class AdminFrame extends JFrame {
             refreshBooks();
         }
     }
-
     class BooksMouseAction implements MouseListener{
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -349,5 +435,52 @@ public class AdminFrame extends JFrame {
             }
         }
     }
-
+    class EditUserAction implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            /*
+            conn = DBConnection.getConnection();
+            if (usernameTE.getText().contains("admin")){
+                String sql = "update userinformation set fname=?, lname=?, age=?, username=?, password=?";
+                state.setString();
+                state.setString();
+                state.setString();
+                state.setString();
+                state.setString();
+                state.executeQuery();
+            } else{
+                String sql = "update workers set fname=?, lname=?, age=?, city=?, address=?, number=?";
+                state.setString();
+                state.setString();
+                state.setString();
+                state.setString();
+                state.setString();
+                state.setString();
+                state.setString();
+                state.executeQuery();
+            }
+        }
+     */
+        }
+    }
+    class SearchUserAction implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            conn = DBConnection.getConnection();
+            // How to print data from both tables
+            String sql = "select fname, lname, age, username, password from userinformation where username like '%" + usernameEditSearchTF.getText() + "%';" +
+                    "select fname, lname, age, username, password from workers where username like '%" +  usernameEditSearchTF.getText() + "%'";
+            try {
+                state = conn.prepareStatement(sql);
+                result = state.executeQuery();
+                tableUsers.setModel(new MyModel(result));
+            } catch (SQLException ex) {
+                messagePopUp();
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                messagePopUp();
+                ex.printStackTrace();
+            }
+        }
+    }
 }
