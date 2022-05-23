@@ -2,12 +2,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.sql.*;
+import java.time.LocalDate;
 
 public class StudentFrame extends JFrame {
+
     static String username;
     Connection conn=null;
     PreparedStatement state=null;
@@ -82,6 +83,7 @@ public class StudentFrame extends JFrame {
         refreshButton.addActionListener(new refreshAction());
         takenScroll.setPreferredSize(new Dimension(350, 150));
         takenBookPanel.add(takenScroll);
+        tableBooks.addMouseListener(new BooksMouseAction());
         booksScroll.setPreferredSize(new Dimension(350, 150));
         allBookPanel.add(booksScroll);
         clearBookForm();
@@ -98,12 +100,15 @@ public class StudentFrame extends JFrame {
         editButton.addActionListener(new editAccountAction());
         deleteButton.addActionListener(new deleteAction());
         fillDataUser();
+        this.setTitle("Library managment");
         this.setVisible(true);
     }
     public void messagePopUp(){ JOptionPane.showMessageDialog(this, "Invalid information"); }
+    public void bookPopUp() { JOptionPane.showMessageDialog(this, "This book already exist");}
+    public void messagePopUpSuccess() { JOptionPane.showMessageDialog(this, "You have succeeded");}
     public void deletePopUp(){
         //Not done
-        System.out.println("NOt done");
+        System.out.println("Account has been deleted");
     }
     public void clearBookForm() {
         titleT.setText("");
@@ -128,17 +133,18 @@ public class StudentFrame extends JFrame {
 
         conn = DBConnection.getConnection();
         try {
-            System.out.println("I go in the try");
-            state = conn.prepareStatement("select * from userinformation where username = '%" + username.toString() + "%'");
+            String sql = "select * from userinformation where username like '%" + username.toString() + "%'";
+            state = conn.prepareStatement(sql);
             result = state.executeQuery();
             tableUsers.setModel(new MyModel(result));
-            System.out.println("rows: " + tableUsers.getRowCount() + "\ncolums: " + tableUsers.getColumnCount());
-            fnameT.setText(tableUsers.getValueAt(0, 1).toString());
-            lnameT.setText(tableUsers.getValueAt(0, 2).toString());
-            ageT.setText(tableUsers.getValueAt(0, 3).toString());
-            passwordT.setText(tableUsers.getValueAt(0, 5).toString());
-            secretQuestionT.setText(tableUsers.getValueAt(0, 6).toString());
-            secretAnswerT.setText(tableUsers.getValueAt(0, 7).toString());
+            System.out.println(tableUsers.getRowCount());
+            //fnameT.setText(tableUsers.getValueAt(1, 1).toString());
+            fnameT.setText(tableUsers.getValueAt(0, 0).toString());
+            lnameT.setText(tableUsers.getValueAt(0, 1).toString());
+            ageT.setText(tableUsers.getValueAt(0, 2).toString());
+            passwordT.setText(tableUsers.getValueAt(0, 4).toString());
+            secretQuestionT.setText(tableUsers.getValueAt(0, 5).toString());
+            secretAnswerT.setText(tableUsers.getValueAt(0, 6).toString());
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -151,49 +157,45 @@ public class StudentFrame extends JFrame {
         public void actionPerformed(ActionEvent e) {
             conn = DBConnection.getConnection();
             String sql = null;
-/*
             // all
-            if (titleT.getText() != null && authorT.getText() != null && isbnT.getText() != null) {
+            if (titleT.getText().length() !=0 && authorT.getText().length() != 0 && isbnT.getText().length() != 0) {
                 sql = "select * from books where title like '%" + titleT.getText()
                         + "%' and author like '%" + authorT.getText()
-                        + "%' and isbn like '%" + isbnT + "%'";
+                        + "%' and isbn like '%" + isbnT.getText() + "%'";
             } // title and author
-            else if (titleT.getText() != null && authorT.getText() != null && isbnT.getText() == null) {
+            else if (titleT.getText().length() != 0 && authorT.getText().length() != 0 && isbnT.getText().length() == 0) {
                 sql = "select * from books where title like '%" + titleT.getText()
                         + "%' and author like '%" + authorT.getText() + "%'";
             } // title and isbn
-            else if (titleT.getText() != null && isbnT.getText() != null && authorT.getText() == null) {
+            else if (titleT.getText().length() != 0 && isbnT.getText().length() != 0 && authorT.getText().length() == 0) {
                 sql = "select * from books where title like '%" + titleT.getText()
-                        + "%' and isbn like '%" + isbnT + "%'";
+                        + "%' and isbn like '%" + isbnT.getText() + "%'";
             } // author and isb
-            else if (authorT.getText() != null && isbnT.getText() != null && titleT.getText() == null) {
+            else if (authorT.getText().length() != 0 && isbnT.getText().length() != 0 && titleT.getText().length() == 0) {
                 sql = "select * from books where isbn like '%" + isbnT.getText()
                         + "%' and author like '%" + authorT.getText() + "%'";
             }  // Only title
-            else if (titleT.getText() != null && authorT.getText() == null && isbnT.getText() == null) {
+            else if (titleT.getText().length() != 0 && authorT.getText().length() == 0 && isbnT.getText().length() == 0) {
                 sql = "select * from books where title like '%" + titleT.getText() + "%'";
             }  // only author
-            else if (authorT.getText() != null && titleT.getText() == null && isbnT.getText() == null) {
+            else if (authorT.getText().length() != 0 && titleT.getText().length() == 0 && isbnT.getText().length() == 0) {
                 sql = "select * from books where author like '%" + authorT.getText() + "%'";
                 System.out.println(sql + "\n\nauthor");
             } //only isbnT
-            else if (isbnT.getText() != null && titleT.getText() == null && authorT.getText() == null) {
+            else if (isbnT.getText().length() != 0 && titleT.getText().length() == 0 && authorT.getText().length() == 0) {
                 sql = "select * from books where isbn like '%" + isbnT.getText() + "%'";
                 System.out.println(sql + "\n\nisbn");
-            } //incorect output */
-            if (titleT.getText() != null) {
-                sql = "select * from books where title like '%" + titleT.getText() + "%'";
-                try {
-                    state = conn.prepareStatement(sql);
-                    result = state.executeQuery();
-                    tableBooks.setModel(new MyModel(result));
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
             } else {
                 messagePopUp();
+            }
+            try {
+                state = conn.prepareStatement(sql);
+                result = state.executeQuery();
+                tableBooks.setModel(new MyModel(result));
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
 
         }
@@ -202,7 +204,19 @@ public class StudentFrame extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            messagePopUp();
+            conn = DBConnection.getConnection();
+            String sql = "Insert into takenBooks(username, bookISBN, dateTaken) values (?, ?, ?)";
+            try {
+                state = conn.prepareStatement(sql);
+                state.setString(1, username);
+                state.setString(2, isbnT.getText().toString());
+                state.setString(3, "");
+//                  how do we take current data ?
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
         }
     }
     class clearBookAction implements ActionListener{
@@ -214,7 +228,21 @@ public class StudentFrame extends JFrame {
     class requestAction implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e){
-            messagePopUp();
+            conn = DBConnection.getConnection();
+            String sql = "insert into requestedBooks (title, author, username, approve) values (?,?,?, false)";
+            try{
+                    state = conn.prepareStatement(sql);
+                    state.setString(1, titleT.getText());
+                    state.setString(2, authorT.getText());
+                    state.setString(3, username);
+                    state.execute();
+                    messagePopUpSuccess();
+            } catch (SQLException ex) {
+                messagePopUp();
+                ex.printStackTrace();
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
         }
     }
     class refreshAction implements ActionListener{
@@ -223,17 +251,76 @@ public class StudentFrame extends JFrame {
             refreshBooks();
         }
     }
-    class editAccountAction implements ActionListener{
+    class BooksMouseAction implements MouseListener {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            int row = tableBooks.getSelectedRow();
+            String isbn = tableBooks.getValueAt(row, 0).toString();
+            titleT.setText(tableBooks.getValueAt(row, 1).toString());
+            authorT.setText(tableBooks.getValueAt(row, 2).toString());
+            isbnT.setText(isbn);
+        }
 
         @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    }
+    class editAccountAction implements ActionListener{
+        @Override
         public void actionPerformed(ActionEvent e) {
+            conn = DBConnection.getConnection();
+            String sql = "update userinformation set fname =?, lname=?, age=?, password=?, question=?, answer = ? where username=?";
+            try {
+                state = conn.prepareStatement(sql);
+                state.setString(1,fnameT.getText());
+                state.setString(2,lnameT.getText());
+                state.setInt(3,Integer.parseInt(ageT.getText()));
+                state.setString(4,passwordT.getText());
+                state.setString(5, secretQuestionT.getText());
+                state.setString(6, secretAnswerT.getText());
+                state.setString(7, username);
+                state.execute();
+                messagePopUpSuccess();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
     }
     class deleteAction implements ActionListener{
-
         @Override
         public void actionPerformed(ActionEvent e) {
-            deletePopUp();
+            conn = DBConnection.getConnection();
+            String sql = "delete from userinformation where username=?";
+            try{
+                state = conn.prepareStatement(sql);
+                state.setString(1, username);
+                state.execute();
+                deletePopUp();
+                setVisible(false);
+                SignUpFrame signFrame = new SignUpFrame();
+                signFrame.setVisible(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                messagePopUp();
+            }
         }
     }
+
+
 }

@@ -4,10 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 //
 public class AdminFrame extends JFrame {
@@ -16,14 +13,17 @@ public class AdminFrame extends JFrame {
     ResultSet result = null;
     JPanel booksPanel = new JPanel();
     JPanel addNewUserPanel = new JPanel();
-    JPanel editPanel = new JPanel();
+    JPanel viewPanel = new JPanel();
     JPanel addColleaguePanel = new JPanel();
     JPanel upBookPanel = new JPanel();
-    JPanel midBookPanel = new JPanel();
+    JPanel buttonBookPanel = new JPanel();
+    JPanel requestedBooksPanel = new JPanel();
     JPanel downBookPanel = new JPanel();
-    JPanel editUpPanel = new JPanel();
-    JPanel editMidPanel = new JPanel();
-    JPanel editDownPanel = new JPanel();
+    JPanel viewUpPanel = new JPanel();
+    JPanel viewButtonsPanel = new JPanel();
+    JPanel viewRequestPanel = new JPanel();
+
+    JPanel viewUsersPanel = new JPanel();
     JTabbedPane tab = new JTabbedPane();
     JLabel titleLabel = new JLabel("Title");
     JLabel authorLabel = new JLabel("Author");
@@ -37,6 +37,8 @@ public class AdminFrame extends JFrame {
     JButton editBookButton = new JButton("Edit");
     JButton removeBookButton = new JButton("Delete");
     JButton refreshBookButton = new JButton("Refresh");
+    JTable requestedBooks = new JTable();
+    JScrollPane requestScroll = new JScrollPane(requestedBooks);
     JTable tableBooks=new JTable();
     JScrollPane myBookScroll=new JScrollPane(tableBooks);
     JButton searchBookButton = new JButton("Search");
@@ -56,6 +58,7 @@ public class AdminFrame extends JFrame {
     JTextField secretQuestionT = new JTextField();
     JTextField secretAnswerT = new JTextField();
     JButton createButton = new JButton("Create new user");
+    JButton editUserButton = new JButton("Edit user");
     //--------------------add new worker
     JLabel fnameLC = new JLabel("First name");
     JLabel lnameLC=new JLabel("LastName");
@@ -77,119 +80,115 @@ public class AdminFrame extends JFrame {
     JTextField  cityTC = new JTextField();
     JTextField  addressTC = new JTextField();
     JTextField  numberTC = new JTextField();
-    String[] item= {"Librarian", "Library Managers", "Library Directors", "Public relations", "Accounting", "Human Resources", "Technicians"};
-    JComboBox<String> jobs =new JComboBox<String>(item);
-    //------------------------------------------edit user-----------------------------------------------------------
-    JLabel eusernameL = new JLabel("Enter user");
-    JTextField usernameEditSearchTF = new JTextField();
-    JButton searchUserButton = new JButton("Search");
-    JButton editUserButton = new JButton("Edit user");
-    JTable tableUsers = new JTable();
+    String[] jobsItem= {"Librarian", "Library Managers", "Library Directors", "Public relations", "Accounting", "Human Resources", "Technicians"};
+    JComboBox<String> jobs =new JComboBox<String>(jobsItem);
+    //------------------------------------------SEARCH-----------------------------------------------------------
+    //?????????????????????????????????????????????????
+    JLabel usernameLS = new JLabel("Username");
+    JLabel titleLS = new JLabel("Title");
+    JLabel authorLS = new JLabel("Author");
+    JTextField usernameTS=new JTextField();
+    JTextField titleTS = new JTextField();
+    JTextField authorTS = new JTextField();
+    JButton searchUserButton = new JButton("Search user");
+    JButton searchUserRequests = new JButton("Search requests");
+    JButton cleanSearchButton = new JButton("Clean");
+    JButton refreshSearchButton = new JButton("Refresh");
+    JTable tableUsers=new JTable();
+    JTable requestTable = new JTable();
     JScrollPane usersScroll = new JScrollPane(tableUsers);
-    //fname=?, lname=?, age=?, username=?, password=?
-    JLabel fnameLE = new JLabel("First name");
-    JLabel lnameLE=new JLabel("LastName");
-    JLabel ageLE = new JLabel("Age:");
-    JLabel usernameLE = new JLabel("Username");
-    JLabel passwordLE =new JLabel("Password: ");
-    JTextField fnameTE=new JTextField();
-    JTextField lnameTE=new JTextField();
-    JTextField ageTE=new JTextField();
-    JTextField usernameE=new JTextField();
-    JTextField passwordTE=new JTextField();
+    JScrollPane requestSearchScroll = new JScrollPane(requestTable);//
     public AdminFrame(){
         this.setSize(400,600);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         tab.add(booksPanel, "Books");
         tab.add(addColleaguePanel, "Add new colleague");
         tab.add(addNewUserPanel, "Add users information");
-        tab.add(editPanel, "Edit users");
+        tab.add(viewPanel, "View users");
 
         //books
-        booksPanel.setLayout(new GridLayout(3, 1));
+        booksPanel.setLayout(new GridLayout(4, 1));
         booksPanel.add(upBookPanel);
-        booksPanel.add(midBookPanel);
+        booksPanel.add(buttonBookPanel);
+        booksPanel.add(requestedBooksPanel);
         booksPanel.add(downBookPanel);
         upBookPanel.setLayout(new GridLayout(4, 2));
         upBookPanel.add(titleLabel);      upBookPanel.add(titleT);
         upBookPanel.add(authorLabel);     upBookPanel.add(authorT);
         upBookPanel.add(quantityLabel);   upBookPanel.add(quantityT);
         upBookPanel.add(isbnLabel);       upBookPanel.add(isbnT);
-        midBookPanel.add(addBookButton);
-        midBookPanel.add(editBookButton);
-        midBookPanel.add(removeBookButton);
-        midBookPanel.add(refreshBookButton);
-        midBookPanel.add(searchBookButton);
+        buttonBookPanel.add(addBookButton);
+        buttonBookPanel.add(editBookButton);
+        buttonBookPanel.add(removeBookButton);
+        buttonBookPanel.add(refreshBookButton);
+        buttonBookPanel.add(searchBookButton);
         addBookButton.addActionListener(new addBookAction());
         editBookButton.addActionListener(new editBooksAction());
         searchBookButton.addActionListener(new searchBookAction());
         removeBookButton.addActionListener(new removeBookAction());
         refreshBookButton.addActionListener(new refreshBookAction());
         myBookScroll.setPreferredSize(new Dimension(350, 150));
+        requestScroll.setPreferredSize(new Dimension(350, 150));
         downBookPanel.add(myBookScroll);
+        requestedBooksPanel.add(requestScroll);
         refreshBooks();
+        refreshRequest();
+        requestedBooks.addMouseListener(new RequestedMouseAction());
         tableBooks.addMouseListener(new BooksMouseAction());
         // --------------------------NEW   USER
         addNewUserPanel.setLayout(new GridLayout(8,1));
-        addNewUserPanel.add(fnameL);
-        addNewUserPanel.add(fnameT);
-        addNewUserPanel.add(lnameL);
-        addNewUserPanel.add(lnameT);
-        addNewUserPanel.add(ageL);
-        addNewUserPanel.add(ageT);
-        addNewUserPanel.add(usernameL);
-        addNewUserPanel.add(usernameT);
-        addNewUserPanel.add(passwordL);
-        addNewUserPanel.add(passwordT);
-        addNewUserPanel.add(secretQuestionL);
-        addNewUserPanel.add(secretQuestionT);
-        addNewUserPanel.add(secretAnswerL);
-        addNewUserPanel.add(secretAnswerT);
-        addNewUserPanel.add(createButton);
+        addNewUserPanel.add(fnameL);                addNewUserPanel.add(fnameT);
+        addNewUserPanel.add(lnameL);                addNewUserPanel.add(lnameT);
+        addNewUserPanel.add(ageL);                  addNewUserPanel.add(ageT);
+        addNewUserPanel.add(usernameL);             addNewUserPanel.add(usernameT);
+        addNewUserPanel.add(passwordL);             addNewUserPanel.add(passwordT);
+        addNewUserPanel.add(secretQuestionL);       addNewUserPanel.add(secretQuestionT);
+        addNewUserPanel.add(secretAnswerL);         addNewUserPanel.add(secretAnswerT);
+        addNewUserPanel.add(createButton);          addNewUserPanel.add(editUserButton);
         createButton.addActionListener(new AddUserAction());
+        editUserButton.addActionListener(new EditUserAction());
         // ------------------ NEW COLLEAGUE
         JButton creteColleagueButton = new JButton("Create new college");
         addColleaguePanel.setLayout(new GridLayout(12,1));
-        addColleaguePanel.add(fnameLC);
-        addColleaguePanel.add(fnameTC);
-        addColleaguePanel.add(lnameLC);
-        addColleaguePanel.add(lnameTC);
-        addColleaguePanel.add(egnLC);
-        addColleaguePanel.add(egnTC);
-        addColleaguePanel.add(ageLC);
-        addColleaguePanel.add(ageTC);
-        addColleaguePanel.add(usernameLC);
-        addColleaguePanel.add(usernameTC);
-        addColleaguePanel.add(passwordLC);
-        addColleaguePanel.add(passwordTC);
-        addColleaguePanel.add(emailLC);
-        addColleaguePanel.add(emailTC);
-        addColleaguePanel.add(cityLC);
-        addColleaguePanel.add(cityTC);
-        addColleaguePanel.add(addressLC);
-        addColleaguePanel.add(addressTC);
-        addColleaguePanel.add(numberLC);
-        addColleaguePanel.add(numberTC);
-        addColleaguePanel.add(jobs);
-        addColleaguePanel.add(creteColleagueButton);
+        addColleaguePanel.add(fnameLC);                     addColleaguePanel.add(fnameTC);
+        addColleaguePanel.add(lnameLC);                     addColleaguePanel.add(lnameTC);
+        addColleaguePanel.add(egnLC);                       addColleaguePanel.add(egnTC);
+        addColleaguePanel.add(ageLC);                       addColleaguePanel.add(ageTC);
+        addColleaguePanel.add(usernameLC);                  addColleaguePanel.add(usernameTC);
+        addColleaguePanel.add(passwordLC);                  addColleaguePanel.add(passwordTC);
+        addColleaguePanel.add(emailLC);                     addColleaguePanel.add(emailTC);
+        addColleaguePanel.add(cityLC);                      addColleaguePanel.add(cityTC);
+        addColleaguePanel.add(addressLC);                   addColleaguePanel.add(addressTC);
+        addColleaguePanel.add(numberLC);                    addColleaguePanel.add(numberTC);
+        addColleaguePanel.add(jobs);                        addColleaguePanel.add(creteColleagueButton);
         creteColleagueButton.addActionListener(new AddCollegeAction());
-        //----------------------edit user------------------------------
-        editPanel.setLayout(new GridLayout(3, 1));
-        editUpPanel.setLayout(new GridLayout(1,2));
-        editPanel.add(editUpPanel);
-        editPanel.add(editMidPanel);
-        editPanel.add(editDownPanel);
-        editUpPanel.add(eusernameL);
-        editUpPanel.add( usernameEditSearchTF);
-        editMidPanel.add(searchUserButton);
-        editMidPanel.add(editUserButton);
-        editDownPanel.add(usersScroll);
-        editUserButton.addActionListener(new EditUserAction());
+        //----------------------view------------------------------
+        viewPanel.setLayout(new GridLayout(4, 1));
+        viewUpPanel.setLayout(new GridLayout(3,2));
+        viewPanel.add(viewUpPanel);
+        viewPanel.add(viewButtonsPanel);
+        viewPanel.add(viewUsersPanel);
+        viewPanel.add(viewRequestPanel);
+        viewUpPanel.add(usernameLS);                viewUpPanel.add(usernameTS);
+        viewUpPanel.add(titleLS);                viewUpPanel.add(titleTS);
+        viewUpPanel.add(authorLS);                viewUpPanel.add(authorTS);
+        viewButtonsPanel.add(searchUserButton);
+        viewButtonsPanel.add(searchUserRequests);
+        viewButtonsPanel.add(refreshSearchButton);
+        viewButtonsPanel.add(cleanSearchButton);
+        viewRequestPanel.add(requestSearchScroll);
+        viewUsersPanel.add(usersScroll);
+        searchUserRequests.addActionListener(new userRequestAction());
         searchUserButton.addActionListener(new SearchUserAction());
-        usersScroll.setPreferredSize(new Dimension(400, 450));
+        refreshSearchButton.addActionListener(new refreshSearchAction());
+        cleanSearchButton.addActionListener(new cleanSearchAction());
+        usersScroll.setPreferredSize(new Dimension(350, 150));
+        requestSearchScroll.setPreferredSize(new Dimension(350, 150));
         refreshUsers();
-
+        refreshSearch();
+        refreshUserSearch();
         this.add(tab);
+        setTitle("Library managment: admin");
         this.setVisible(true);
     }
 
@@ -197,7 +196,7 @@ public class AdminFrame extends JFrame {
     public void messagePopUp(){
         JOptionPane.showMessageDialog(this, "Invalid information");
     }
-    public void createdPopUp() { JOptionPane.showMessageDialog(this, "Successfully created account");}
+    public void createdPopUp(String item) { JOptionPane.showMessageDialog(this, "Successfully created " + item);}
     public void clearFormWorker(){
         fnameTC.setText("");
         lnameTC.setText("");
@@ -209,6 +208,7 @@ public class AdminFrame extends JFrame {
         cityTC.setText("");
         addressTC.setText("");
         numberTC.setText("");
+        jobs.setSelectedIndex(0);
     }
     public void clearFormUser(){
         fnameT.setText("");
@@ -239,11 +239,22 @@ public class AdminFrame extends JFrame {
             e.printStackTrace();
         }
     }
+    public void refreshRequest(){
+        conn = DBConnection.getConnection();
+        try{
+            state = conn.prepareStatement("SELECT id, title, author, username FROM REQUESTEDBOOKS where approve = false");
+            result = state.executeQuery();
+            requestedBooks.setModel(new MyModel(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public void refreshUsers(){
         conn = DBConnection.getConnection();
         try {
+            //GET ERROR HERE BECAUSE IT ISNT WORKING CORRECTLY
             state = conn.prepareStatement("select fname, lname, age, username, password from userinformation;");
-            state = conn.prepareStatement("select fname, lname, age, username, password from workers");
+            //state = conn.prepareStatement("select fname, lname, age, username, password from workers");
             result = state.executeQuery();
         } catch (SQLException e) {
             messagePopUp();
@@ -253,32 +264,70 @@ public class AdminFrame extends JFrame {
             e.printStackTrace();
         }
     }
+    public void refreshSearch(){
+        conn = DBConnection.getConnection();
+        try {
+            state = conn.prepareStatement("SELECT id, title, author, username FROM REQUESTEDBOOKS where approve = false");
+            result = state.executeQuery();
+            requestedBooks.setModel(new MyModel(result));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void refreshUserSearch(){
+        try{
+            state = conn.prepareStatement("select fname, lname, age, username, password from userinformation");
+            result = state.executeQuery();
+            tableUsers.setModel(new MyModel(result));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void addBook(){
+        if (!isbnT.getText().isEmpty() && !titleT.getText().isEmpty() & !authorT.getText().isEmpty() && !quantityT.getText().isEmpty() && Integer.parseInt(quantityT.getText()) > 0) {
+            conn = DBConnection.getConnection();
+            try{
+                String sqlRequest = "select * from requestedbooks where title like '" + titleT.getText() +  "' and author like '" +  authorT.getText() + "'";
+                state = conn.prepareStatement(sqlRequest);
+                ResultSet resultSet = state.executeQuery();
+                if(resultSet.next()){
+                    sqlRequest = "update requestedbooks set approve = true where title like '" + titleT.getText() +  "' and author like '" +  authorT.getText() + "'";
+                    state = conn.prepareStatement(sqlRequest);
+                    state.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            String sql = "Insert into books(isbn, title, author, quantity) values(?, ?, ?, ?)";
+            try {
+                state = conn.prepareStatement(sql);
+                state.setString(1, isbnT.getText());
+                state.setString(2, titleT.getText());
+                state.setString(3, authorT.getText());
+                state.setInt(4, Integer.parseInt(quantityT.getText()));
+                state.execute();
+                refreshBooks();
+                clearFormBook();
+                createdPopUp("book.");
+            } catch (SQLException ex) {
+                messagePopUp();
+                ex.printStackTrace();
+            }
+        } else {
+            messagePopUp();
+        }
+    }
     class addBookAction implements  ActionListener{
         @Override
         public void actionPerformed(ActionEvent e){
-            if (!isbnT.getText().isEmpty() && !titleT.getText().isEmpty() & !authorT.getText().isEmpty() && !quantityT.getText().isEmpty() && Integer.parseInt(quantityT.getText()) > 0) {
-                conn = DBConnection.getConnection();
-                String sql = "Insert into books(isbn, title, author, quantity) values(?, ?, ?, ?)";
-                try {
-                    state = conn.prepareStatement(sql);
-                    state.setString(1, isbnT.getText());
-                    state.setString(2, titleT.getText());
-                    state.setString(3, authorT.getText());
-                    state.setInt(4, Integer.parseInt(quantityT.getText()));
-                    state.execute();
-                    refreshBooks();
-                    clearFormBook();
-                } catch (SQLException ex) {
-                    messagePopUp();
-                    ex.printStackTrace();
-                }
-            } else {
-                messagePopUp();
-            }
+             addBook();
         }
     }
     class editBooksAction implements ActionListener{
-
         @Override
         public void actionPerformed(ActionEvent e) {
             conn = DBConnection.getConnection();
@@ -297,36 +346,51 @@ public class AdminFrame extends JFrame {
         }
     }
     class searchBookAction implements ActionListener {
-
         @Override
         public void actionPerformed(ActionEvent e) {
             conn = DBConnection.getConnection();
             String sql = null;
-            if (titleT.getText() != null){
+            // all
+            if (titleT.getText().length() !=0 && authorT.getText().length() != 0 && isbnT.getText().length() != 0) {
+                sql = "select * from books where title like '%" + titleT.getText()
+                        + "%' and author like '%" + authorT.getText()
+                        + "%' and isbn like '%" + isbnT.getText() + "%'";
+            } // title and author
+            else if (titleT.getText().length() != 0 && authorT.getText().length() != 0 && isbnT.getText().length() == 0) {
+                sql = "select * from books where title like '%" + titleT.getText()
+                        + "%' and author like '%" + authorT.getText() + "%'";
+            } // title and isbn
+            else if (titleT.getText().length() != 0 && isbnT.getText().length() != 0 && authorT.getText().length() == 0) {
+                sql = "select * from books where title like '%" + titleT.getText()
+                        + "%' and isbn like '%" + isbnT.getText() + "%'";
+            } // author and isb
+            else if (authorT.getText().length() != 0 && isbnT.getText().length() != 0 && titleT.getText().length() == 0) {
+                sql = "select * from books where isbn like '%" + isbnT.getText()
+                        + "%' and author like '%" + authorT.getText() + "%'";
+            }  // Only title
+            else if (titleT.getText().length() != 0 && authorT.getText().length() == 0 && isbnT.getText().length() == 0) {
                 sql = "select * from books where title like '%" + titleT.getText() + "%'";
-            } else if (authorT.getText() != null){
+            }  // only author
+            else if (authorT.getText().length() != 0 && titleT.getText().length() == 0 && isbnT.getText().length() == 0) {
                 sql = "select * from books where author like '%" + authorT.getText() + "%'";
                 System.out.println(sql + "\n\nauthor");
-            } else if (quantityT.getText() != null){
-                sql = "select * from books where quantity like '%" + quantityT.getText() + "%'";
-                System.out.println(sql + "\n\nquantity");
-            }else if (isbnT.getText() != null){
+            } //only isbnT
+            else if (isbnT.getText().length() != 0 && titleT.getText().length() == 0 && authorT.getText().length() == 0) {
                 sql = "select * from books where isbn like '%" + isbnT.getText() + "%'";
                 System.out.println(sql + "\n\nisbn");
-            } else{
+            } else {
                 messagePopUp();
             }
-            try{
+            try {
                 state = conn.prepareStatement(sql);
                 result = state.executeQuery();
                 tableBooks.setModel(new MyModel(result));
             } catch (SQLException ex) {
-                messagePopUp();
                 ex.printStackTrace();
             } catch (Exception ex) {
-                messagePopUp();
                 ex.printStackTrace();
             }
+
         }
     }
     class removeBookAction implements ActionListener{
@@ -350,6 +414,8 @@ public class AdminFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e){
             refreshBooks();
+            refreshRequest();
+
         }
     }
     class BooksMouseAction implements MouseListener{
@@ -363,7 +429,33 @@ public class AdminFrame extends JFrame {
             authorT.setText(tableBooks.getValueAt(row, 2).toString());
             quantityT.setText(tableBooks.getValueAt(row, 3).toString());
         }
+        @Override
+        public void mousePressed(MouseEvent e) {
 
+        }
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    }
+    class RequestedMouseAction implements MouseListener {
+        @Override
+        public void mouseClicked(MouseEvent e){
+            int row = requestedBooks.getSelectedRow();
+            int id = Integer.parseInt(requestedBooks.getValueAt(row, 0).toString());
+            titleT.setText(requestedBooks.getValueAt(row, 1).toString());
+            authorT.setText(requestedBooks.getValueAt(row, 2).toString());
+        }
         @Override
         public void mousePressed(MouseEvent e) {
 
@@ -403,7 +495,7 @@ public class AdminFrame extends JFrame {
                 state.setString(10, numberTC.getText());
                 state.setString(11, jobs.getSelectedItem().toString());
                 state.execute();
-                createdPopUp();
+                createdPopUp("colleague.");
                 clearFormWorker();
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -426,9 +518,8 @@ public class AdminFrame extends JFrame {
                 state.setString(6, secretQuestionT.getText());
                 state.setString(7, secretAnswerT.getText());
                 state.execute();
-                createdPopUp();
+                createdPopUp(" account");
                 clearFormUser();
-
             } catch (SQLException ex) {
                 messagePopUp();
                 ex.printStackTrace();
@@ -467,10 +558,12 @@ public class AdminFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             conn = DBConnection.getConnection();
-            // How to print data from both tables
-            String sql = "select fname, lname, age, username, password from userinformation where username like '%" + usernameEditSearchTF.getText() + "%';" +
-                    "select fname, lname, age, username, password from workers where username like '%" +  usernameEditSearchTF.getText() + "%'";
-            try {
+            String sql = null;
+            if (usernameTS.getText().contains("admin")){
+                sql = "select fname, lname, age, username, password from workers where username like '%" +  usernameTS.getText() + "%'";
+            } else {
+                sql = "select fname, lname, age, username, password from userinformation where username like '%" + usernameTS.getText() + "%'";
+            }try {
                 state = conn.prepareStatement(sql);
                 result = state.executeQuery();
                 tableUsers.setModel(new MyModel(result));
@@ -481,6 +574,60 @@ public class AdminFrame extends JFrame {
                 messagePopUp();
                 ex.printStackTrace();
             }
+        }
+    }
+    class userRequestAction implements ActionListener{
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            System.out.println("I am in search request probably by button");
+            conn = DBConnection.getConnection();
+            String sql = null;
+            if (titleTS.getText().length() != 0 && authorTS.getText().length() != 0 && usernameTS.getText().length() != 0) {
+                sql = "select * from requestedbooks where title like '" + titleTS.getText()
+                        + "%' and author like '%" + authorTS.getText()
+                        + "%' and username like '%" + usernameTS.getText() + "%'";
+            } else if (titleTS.getText().length() != 0 && authorTS.getText().length() == 0 && usernameTS.getText().length() == 0) {
+                sql = "select * from requestedBooks where title like '" + titleTS.getText() + "'";
+            } else if (authorTS.getText().length() != 0 && usernameTS.getText().length() == 0 && titleTS.getText().length() == 0) {
+                sql = "select * from requestedBooks where author like '" + authorTS.getText() + "'";
+            } else if (usernameTS.getText().length() != 0 && titleTS.getText().length() == 0 && authorTS.getText().length() == 0) {
+                sql = "select * from requestedBooks where username like '" + usernameTS.getText() + "'";
+            } else if (usernameTS.getText().length() != 0 && titleTS.getText().length() != 0 && authorTS.getText().length() == 0) {
+                sql = "select * from requestedbooks where username like '" + usernameTS.getText()
+                        + "%' and title like '%" + titleTS.getText() + "%'";
+            } else if (usernameTS.getText().length() != 0  && authorTS.getText().length() != 0 && titleTS.getText().length() == 0){
+                sql = "select * from requestedbooks where username like '" + usernameTS.getText()
+                        + "%' and author like '%" + authorTS.getText() + "%'";
+            } else if (titleTS.getText().length() != 0 && authorTS.getText().length() != 0 && usernameTS.getText().length() == 0) {
+                sql = "select * from requestedbooks where title like '" + titleTS.getText()
+                        + "%' and author like '%" + authorTS.getText() + "%'";
+            } else {
+                messagePopUp();
+                sql ="select * from requestedbooks";
+            }
+            try {
+                state = conn.prepareStatement(sql);
+                result = state.executeQuery();
+                requestTable.setModel(new MyModel(result));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    class refreshSearchAction  implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent event){
+            refreshSearch();
+            refreshUserSearch();
+        }
+    }
+    class cleanSearchAction implements ActionListener{
+        @Override
+        public void actionPerformed (ActionEvent event){
+            usernameTS.setText("");
+            titleTS.setText("");
+            authorTS.setText("");
+
         }
     }
 }

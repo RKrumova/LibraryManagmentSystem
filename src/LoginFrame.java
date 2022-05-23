@@ -31,15 +31,14 @@ public class LoginFrame extends JFrame {
         downPanel.add(errorMessage);
         downPanel.add(loginButton);
         downPanel.add(signButton);
-        //downPanel.add(forgotPasswordButton);
-        //downPanel.add(forgotPasswordButton);
-        //downPanel.add(forgotPasswordButton);
+        downPanel.add(forgotPasswordButton);
         downPanel.add(clearLoginButton);
         loginButton.addActionListener(new loginAction());
         signButton.addActionListener(new GoToSign());
         forgotPasswordButton.addActionListener(new newPasswordAction());
         clearLoginButton.addActionListener(new clearForm());
         this.add(downPanel);
+        this.setTitle("Library managment");
         this.setVisible(true);
     }
     public void clearForm() {
@@ -49,7 +48,6 @@ public class LoginFrame extends JFrame {
     class clearForm implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-
             errorMessage.setText("");
             clearForm();
         }
@@ -89,7 +87,6 @@ public class LoginFrame extends JFrame {
                     ResultSet resultSet = statement.executeQuery(sql);
 
                     if(resultSet.next()) {
-                        System.out.println("Im in else statment");
                         setVisible(false);
                         StudentFrame.username = username;
                         StudentFrame studentFrame = new StudentFrame();
@@ -110,7 +107,8 @@ public class LoginFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             setVisible(false);
-            NewPassword newPassword = new NewPassword(usernameT.getText());
+            NewPassword.username = usernameT.getText();
+            NewPassword newPassword = new NewPassword();
             newPassword.setVisible(true);
         }
     }
